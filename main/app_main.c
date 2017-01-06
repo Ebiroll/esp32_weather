@@ -16,6 +16,7 @@
 #include "driver/gpio.h"
 #include "sdkconfig.h"
 #include "driver/i2c.h"
+#include "Si7021.h"
 
 // Use same inputs as sparkfun
 
@@ -193,6 +194,7 @@ void blink_task(void *pvParameters)
     gpio_pad_select_gpio(BLINK_GPIO);
     gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
 
+
 	while (1) {
           gpio_set_level(BLINK_GPIO, 0);
           vTaskDelay(1000 / portTICK_RATE_MS);
@@ -203,8 +205,8 @@ void blink_task(void *pvParameters)
           gpio_set_level(BLINK_GPIO, 1);
           vTaskDelay(1000 / portTICK_RATE_MS);
 
-		/* wakeup from deep sleep after 8 seconds */
-		system_deep_sleep(1000*1000*8);
+		/* wakeup from deep sleep after 6 seconds */
+		esp_deep_sleep(1000*1000*6);
 	}
 }
 
@@ -242,8 +244,17 @@ void app_main()
 
 
     i2c_scan();
+    int times=0;
 
-    //xTaskCreatePinnedToCore(&blink_task, "blink_task", 1024, NULL, 5,
+    while (times++<10) {
+        float rh=i2c_7021_read_rh();
+
+        float temp=i2c_7021_read_temp();
+
+        printf("RH %f Temp %f\n",rh,temp);
+
+    }
+    //xTaskCreatePinnedToCore(&blink_task, "blink_task", 4096, NULL, 5,
 	//			NULL, 0);
 
 }
