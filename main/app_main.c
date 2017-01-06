@@ -9,14 +9,34 @@
  *
 */
 #include <stdio.h>
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/event_groups.h"
 #include "esp_system.h"
+#include "esp_event_loop.h"
+#include "nvs_flash.h"
+
+#include "esp_system.h"
+#include "esp_wifi.h"
+#include "esp_event_loop.h"
+#include "esp_log.h"
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
 
 #include "driver/gpio.h"
 #include "sdkconfig.h"
 #include "driver/i2c.h"
 #include "Si7021.h"
+
+// Use internal sensor
+uint8_t temprature_sens_read();	
+
+bool start_wifi=false;
 
 // Use same inputs as sparkfun
 
@@ -33,6 +53,27 @@
 #define ACK_CHECK_DIS  0x0     /*!< I2C master will not check ack from slave */
 #define ACK_VAL    0x0         /*!< I2C ack value */
 #define NACK_VAL   0x1         /*!< I2C nack value */
+
+RTC_DATA_ATTR static int boot_count = 0;
+
+// Socket info
+#define WEB_SERVER "thingspeak.com"
+#define WEB_PORT 80
+#define WEB_URL "http://thingspeak.com/"
+
+/* FreeRTOS event group to signal when we are connected & ready to make a request */
+static EventGroupHandle_t wifi_event_group;
+
+/* The event group allows multiple bits for each event,
+   but we only care about one event - are we connected
+   to the AP with an IP? */
+const int CONNECTED_BIT = BIT0;
+
+const int POSTED_BIT = BIT1;
+
+static const char *TAG = "weather";
+
+
 
 
 /**
@@ -180,10 +221,10 @@ void i2c_scan() {
         ret=i2c_master_check_slave(I2C_MASTER_NUM,address);
         if (ret == ESP_OK) {
             printf("Found device addres: %02x\n", address);
+            foundCount++;
         }
     }
-    printf("Done scanning\n");
-
+    printf("Done scanning.. found %d devices\n",foundCount);
 }
 
 
@@ -205,15 +246,191 @@ void blink_task(void *pvParameters)
           gpio_set_level(BLINK_GPIO, 1);
           vTaskDelay(1000 / portTICK_RATE_MS);
 
+
+        if (start_wifi) {
+            xEventGroupWaitBits(wifi_event_group, POSTED_BIT,
+                                false, true, portMAX_DELAY);
+        }
+
 		/* wakeup from deep sleep after 6 seconds */
 		esp_deep_sleep(1000*1000*6);
 	}
 }
 
+#define THINGSPEAK_CHANNEL_KEY "8FKJRMLXT2CPYCVO"
+
+
+char temp_buff[1024];
+
+static void http_get_task(void *pvParameters)
+{
+    //const struct addrinfo hints = {
+    //    .ai_family = AF_INET,
+    //    .ai_socktype = SOCK_STREAM,
+    //};
+    struct addrinfo *res;
+    //struct in_addr *addr;
+    struct sockaddr_in dest; 
+
+    int s, r;
+    char recv_buf[64];
+
+    while(1) {
+        /* Wait for the callback to set the CONNECTED_BIT in the
+           event group.
+        */
+        xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
+                            false, true, portMAX_DELAY);
+        ESP_LOGI(TAG, "Connected to AP");
+
+/* DNS failed
+        int err = getaddrinfo(WEB_SERVER, "80", &hints, &res);
+
+        if(err != 0 || res == NULL) {
+            ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            continue;
+        }
+*/
+        memset(&dest, 0, sizeof(dest));                          /* zero the struct */
+        dest.sin_family = AF_INET;
+        dest.sin_addr.s_addr = inet_addr("184.106.153.149");    /* set destination IP number */ 
+        dest.sin_port = htons(80);                              /* set destination port number */
+
+
+
+         res=&dest;
+        /* Code to print the resolved IP.
+
+           Note: inet_ntoa is non-reentrant, look at ipaddr_ntoa_r for "real" code */
+        //addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
+        //ESP_LOGI(TAG, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
+
+        s = socket(AF_INET, SOCK_STREAM, 0);
+        if(s < 0) {
+            ESP_LOGE(TAG, "... Failed to allocate socket.");
+            freeaddrinfo(res);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            continue;
+        }
+        ESP_LOGI(TAG, "... allocated socket\r\n");
+
+        if(connect(s, (struct sockaddr *)&dest, sizeof(struct sockaddr_in)) != 0) {
+            ESP_LOGE(TAG, "... socket connect failed errno=%d", errno);
+            close(s);
+            freeaddrinfo(res);
+            vTaskDelay(4000 / portTICK_PERIOD_MS);
+            continue;
+        }
+
+        ESP_LOGI(TAG, "... connected");
+        //freeaddrinfo(res);
+
+        if (write(s, temp_buff, strlen(temp_buff)) < 0) {
+            ESP_LOGE(TAG, "... socket send failed");
+            close(s);
+            vTaskDelay(4000 / portTICK_PERIOD_MS);
+            continue;
+        }
+        ESP_LOGI(TAG, "... socket send success");
+        printf("%s\n",temp_buff);
+
+        /* Read HTTP response */
+        do {
+            bzero(recv_buf, sizeof(recv_buf));
+            r = read(s, recv_buf, sizeof(recv_buf)-1);
+            for(int i = 0; i < r; i++) {
+                putchar(recv_buf[i]);
+            }
+        } while(r > 0);
+
+        ESP_LOGI(TAG, "... done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
+        close(s);
+        for(int countdown = 10; countdown >= 0; countdown--) {
+            ESP_LOGI(TAG, "%d... ", countdown);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+        }
+        ESP_LOGI(TAG, "Starting again!");
+        xEventGroupSetBits(wifi_event_group, POSTED_BIT);
+    }
+}
+
+
+void post_data(float temp,float humidity,int internal_temp)
+{
+
+    sprintf(temp_buff,"GET /update?api_key=%s&temp=%f&distance=%f&pressure=%d&headers=false HTTP/1.0\n\n",THINGSPEAK_CHANNEL_KEY,temp,humidity,internal_temp);
+
+    xTaskCreate(&http_get_task, "http_get_task", 4096, NULL, 5, NULL);
+
+}
+
+static esp_err_t event_handler(void *ctx, system_event_t *event)
+{
+    switch(event->event_id) {
+    case SYSTEM_EVENT_STA_START:
+        esp_wifi_connect();
+        break;
+    case SYSTEM_EVENT_STA_GOT_IP:
+        xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
+        break;
+    case SYSTEM_EVENT_STA_DISCONNECTED:
+        /* This is a workaround as ESP32 WiFi libs don't currently
+           auto-reassociate. */
+        esp_wifi_connect();
+        xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+        break;
+    default:
+        break;
+    }
+    return ESP_OK;
+}
+
+
+
+static void initialise_wifi(void)
+{
+    tcpip_adapter_init();
+    wifi_event_group = xEventGroupCreate();
+    ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
+    ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+    wifi_config_t wifi_config = {
+        .sta = {
+            .ssid = "ssid",
+            .password = "password",
+        },
+    };
+    ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
+    ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
+    ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+    ESP_ERROR_CHECK( esp_wifi_start() );
+}
+
+
 void app_main()
 {
     int ret;
 	printf("Starting ... \r\n");
+    //boot_count;
+    ESP_LOGI(TAG, "Boot count: %d", boot_count);
+
+    // read sensor early
+    uint8_t internal=temprature_sens_read();	
+
+
+    // Every minute start wifi
+    if (boot_count%10==0) {
+        nvs_flash_init();
+        initialise_wifi();
+        start_wifi=true;
+    } else {
+        // We dont start wifi, pretend post is complete
+        //xEventGroupSetBits(wifi_event_group, POSTED_BIT);
+        start_wifi=false;
+    }
+    boot_count++;
 
 
     uint8_t sna3,sna2,sna1,sna0; 
@@ -245,16 +462,24 @@ void app_main()
 
     i2c_scan();
     int times=0;
+    float rh;
+    float temp;
 
     while (times++<10) {
-        float rh=i2c_7021_read_rh();
+        rh=i2c_7021_read_rh();
 
-        float temp=i2c_7021_read_temp();
+        temp=i2c_7021_read_temp();
 
-        printf("RH %f Temp %f\n",rh,temp);
+        printf("RH %f Temp %f , internal %d\n",rh,temp,internal);
 
     }
-    //xTaskCreatePinnedToCore(&blink_task, "blink_task", 4096, NULL, 5,
-	//			NULL, 0);
+
+
+    if (start_wifi) {
+        post_data(temp,rh,internal);
+    }
+
+    xTaskCreatePinnedToCore(&blink_task, "blink_task", 4096, NULL, 5,
+				NULL, 0);
 
 }
