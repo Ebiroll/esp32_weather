@@ -97,6 +97,37 @@ esp_err_t i2c_sn7021_test(i2c_port_t i2c_num, uint8_t* sna_3,uint8_t* sna_2,uint
     return ESP_OK;
 }
 
+esp_err_t i2c_sn7021_test2(i2c_port_t i2c_num, uint8_t* sna_3,uint8_t* sna_2,uint8_t* sna_1,uint8_t* sna_0)
+{
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, SI7021_ADDRESS << 1 | WRITE_BIT, ACK_CHECK_EN);
+    i2c_master_write_byte(cmd, 0xFC, ACK_CHECK_EN);
+    i2c_master_write_byte(cmd, 0xC9, ACK_CHECK_EN);
+
+    i2c_master_stop(cmd);
+    int ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    i2c_cmd_link_delete(cmd);
+    if (ret == ESP_FAIL) {
+        return ret;
+    }
+    vTaskDelay(30 / portTICK_RATE_MS);
+
+    cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, SI7021_ADDRESS << 1 | READ_BIT, ACK_CHECK_EN);
+    i2c_master_read_byte(cmd, sna_3, ACK_VAL);
+    i2c_master_read_byte(cmd, sna_2, ACK_VAL);
+    i2c_master_read_byte(cmd, sna_1, ACK_VAL);
+    i2c_master_read_byte(cmd, sna_0, NACK_VAL);
+    i2c_master_stop(cmd);
+    ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    i2c_cmd_link_delete(cmd);
+    if (ret == ESP_FAIL) {
+        return ESP_FAIL;
+    }
+    return ESP_OK;
+}
 
 
 /**
@@ -193,6 +224,22 @@ void app_main()
     } else {
         printf("No ack, sensor not connected...skip...\n");
     }
+    ret = i2c_sn7021_test2( I2C_MASTER_NUM, &sna3, &sna2,&sna1,&sna0);
+    if (ret == ESP_OK) {
+        printf("s/nb: %02x %02x %02x %02x\n", sna3,sna2,sna1,sna0);
+    } else {
+        printf("No ack, sensor not connected...skip...\n");
+    }
+    if (sna3==0x0D) {
+        printf("Si7013\n");
+    }
+    if (sna3==0x14) {
+        printf("Si7020\n");
+    }
+    if (sna3==0x15) {
+        printf("Si7021\n");
+    }
+
 
     i2c_scan();
 
