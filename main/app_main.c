@@ -359,7 +359,10 @@ static void http_get_task(void *pvParameters)
 void post_data(float temp,float humidity,int internal_temp)
 {
 
-    sprintf(temp_buff,"GET /update?api_key=%s&temp=%f&distance=%f&pressure=%d&headers=false HTTP/1.0\n\n",THINGSPEAK_CHANNEL_KEY,temp,humidity,internal_temp);
+    int itemp=temp;
+    int humid=humidity;
+
+    sprintf(temp_buff,"GET /update?api_key=%s&field1=%d&field2=%d&field3=%d HTTP/1.0\n\n",THINGSPEAK_CHANNEL_KEY,itemp,humid,internal_temp);
 
     xTaskCreate(&http_get_task, "http_get_task", 4096, NULL, 5, NULL);
 
