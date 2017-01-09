@@ -78,5 +78,7 @@ define _freertos_show_thread_item
 		end
 		if (*(unsigned int*)((*((tskTCB *)$threadid)).pxTopOfStack+4)>0x4000 & (*(unsigned int*)((*((tskTCB *)$threadid)).pxTopOfStack+4)<0x40C00000))
 		        x/3i *(unsigned int*) ((*((tskTCB *)$threadid)).pxTopOfStack+4)
+		else
+		       p/x *(unsigned int*) ((*((tskTCB *)$threadid)).pxTopOfStack+4)
 	end
 end
