@@ -1,0 +1,422 @@
+ets Jun  8 2016 00:22:57
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+ets Jun  8 2016 00:22:57
+
+rst:0x10 (RTCWDT_RTC_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0x00
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3ffc0008,len:4
+load:0x3ffc000c,len:3236
+load:0x40078000,len:4420
+ho 0 tail 12 room 4
+load:0x40080000,len:260
+entry 0x40080034
+[0;32mI (19) boot: Espressif ESP32 2nd stage bootloader v. V0.1[0m
+[0;32mI (25) boot: compile time 15:50:00[0m
+[0;32mI (39) boot: SPI Speed      : 40MHz[0m
+[0;32mI (39) boot: SPI Mode       : DIO[0m
+[0;32mI (40) boot: SPI Flash Size : 4MB[0m
+[0;32mI (41) boot: Partition Table:[0m
+[0;32mI (44) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (51) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (58) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (66) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (73) boot: End of partition table[0m
+[0;32mI (77) boot: Loading app partition at offset 00010000[0m
+[0;32mI (743) boot: segment 0: paddr=0x00010018 vaddr=0x00000000 size=0x0ffe8 ( 65512) [0m
+[0;32mI (744) boot: segment 1: paddr=0x00020008 vaddr=0x3f400010 size=0x08dec ( 36332) map[0m
+[0;32mI (749) boot: segment 2: paddr=0x00028dfc vaddr=0x3ffbfda0 size=0x01b30 (  6960) load[0m
+[0;32mI (819) heap_alloc_caps: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (820) heap_alloc_caps: At 3FFC18D0 len 0001E730 (121 KiB): DRAM[0m
+[0;32mI (822) heap_alloc_caps: At 3FFE8000 len 00010000 (64 KiB): D/IRAM[0m
+[0;32mI (829) heap_alloc_caps: At 3FFFC000 len 00004000 (16 KiB): D/IRAM[0m
+[0;32mI (836) heap_alloc_caps: At 4009C6D0 len 00003930 (14 KiB): IRAM[0m
+[0;32mI (842) cpu_start: Pro cpu up.[0m
+[0;32mI (846) cpu_start: Single core mode[0m
+[0;32mI (850) cpu_start: Pro cpu start user code[0m
+[0;31mE (914) phy_init: PHY data partition validated[0m
+[0;32mI (1079) phy: phy_version: 258, Nov 29 2016, 15:51:07, 1, 0[0m
+[0;32mI (2111) cpu_start: Starting scheduler on PRO CPU.[0m
+Starting ... 
+[0;32mI (2114) weather: Boot count: 0[0m
+tcpip_task_hdlxxx : 3ffc5324, prio:18,stack:2048
+I (2114) wifi: frc2_timer_task_hdl:3ffc6d64, prio:22, stack:2048
+I (2124) wifi: pp_task_hdl : 3ffc95b0, prio:23, stack:8192
+[0;32mI (2124) weather: Setting WiFi configuration SSID p...[0m
+I (2134) wifi: mode : sta (24:0a:c4:00:c8:b0)
+s/n: a7 6b 63 b9
+s/nb: 15 ff b5 ff
+Si7021
+Found device addres: 40
+Found device addres: 77
+Done scanning.. found 2 devices
+I (2254) wifi: n:1 0, o:1 0, ap:255 255, sta:1 0, prof:1
+I (2904) wifi: state: init -> auth (b0)
+I (2904) wifi: state: auth -> assoc (0)
+I (2904) wifi: state: assoc -> run (10)
+I (2924) wifi: connected with p, channel 1
+RH 27.588409 Temp 23.871294 , internal 83
+chip id 60
+Displaying all regs
+0x08 0802 0500 0809 0208 0a07 020d 0f06 0006 0f00 060e 0705 0608 0302 0000 0904 080f 
+0x09 0606 0d06 0d00 000b 0a02 0201 0e09 0f0f 0f09 0f0f 0a0c 0206 000a 0d08 0b0d 0100 
+0x0a 0000 040b 0a05 0000 0000 0000 0000 0000 0000 0000 0000 0000 0303 0000 0000 0c00 
+0x0b 0000 0504 0000 0000 0000 0000 0600 0002 0000 0001 0f0f 0f0f 010f 0600 0003 0000 
+0x0c 0000 0000 0204 0f0f 0000 0000 0000 0000 0001 0000 0000 0000 0000 0000 0000 0000 
+0x0d 0600 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 
+0x0e 0000 0609 0001 0000 0104 0002 0000 010e 030c 0401 0f0f 0f0f 0f0f 0f0f 0f0f 0f0f 
+0x0f 0f0f 0000 0001 0000 0204 0000 0000 040c 0d01 0000 070f 0f05 0000 0606 0705 0800 
+status 0
+status after begin c
+power mode 3
+status c
+[0;32mI (7684) event: ip: 192.168.1.128, mask: 255.255.255.0, gw: 192.168.1.1[0m
+I (12904) wifi: pm start, type:0
+
+status 0
+temp 524176,5241
+hPA 314656,1229
+rh 26227,25
+RH 31.328125 Temp 22.250000 , pressure 100844.875000
+power mode 0
+power mode 0
+status 0
+status 0
+temp 523968,5239
+hPA 314576,1228
+rh 26227,25
+RH 31.324219 Temp 22.180000 , pressure 100847.687500
+power mode 0
+power mode 0
+status 0
+status 0
+temp 523760,5237
+hPA 314544,1228
+rh 26249,25
+RH 31.441406 Temp 22.110001 , pressure 100842.328125
+power mode 0
+[0;32mI (36504) weather: Connected to AP[0m
+[0;32mI (36504) weather: ... allocated socket
+[0m
+[0;32mI (36634) weather: ... connected[0m
+[0;32mI (36634) weather: ... socket send success[0m
+GET /update?api_key=8FKJRMLXT2CPYCVO&field1=23&field2=27&field3=83&field4=22&field5=31 HTTP/1.0
+
+
+HTTP/1.1 200 OK
+Server: nginx/1.7.5
+Date: Mon, 09 Jan 2017 21:15:52 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 1
+Connection: close
+Status: 200 OK
+X-Frame-Options: ALLOWALL
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS, DELETE, PATCH
+Access-Control-Allow-Headers: origin, content-type, X-Requested-With
+Access-Control-Max-Age: 1800
+ETag: "c4ca4238a0b923820dcc509a6f75849b"
+Cache-Control: max-age=0, private, must-revalidate
+X-Request-Id: 3de5aa6a-96ee-4346-add6-4dafe2992f1c
+
+1[0;32mI (36874) weather: ... done reading from socket. Last read return=0 errno=128
+[0m
+[0;32mI (36884) weather: 10... [0m
+[0;32mI (37884) weather: 9... [0m
+[0;32mI (38884) weather: 8... [0m
+[0;32mI (39884) weather: 7... [0m
+[0;32mI (40884) weather: 6... [0m
+[0;32mI (41884) weather: 5... [0m
+[0;32mI (42884) weather: 4... [0m
+[0;32mI (43884) weather: 3... [0m
+[0;32mI (44884) weather: 2... [0m
+[0;32mI (45884) weather: 1... [0m
+[0;32mI (46884) weather: 0... [0m
+[0;32mI (47884) weather: Starting again![0m
+[0;32mI (47884) weather: Connected to AP[0m
+ets Jun  8 2016 00:22:57
+
+rst:0x5 (DEEPSLEEP_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0x00
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3ffc0008,len:4
+load:0x3ffc000c,len:3236
+load:0x40078000,len:4420
+ho 0 tail 12 room 4
+load:0x40080000,len:260
+entry 0x40080034
+[0;32mI (19) boot: Espressif ESP32 2nd stage bootloader v. V0.1[0m
+[0;32mI (25) boot: compile time 15:50:00[0m
+[0;32mI (40) boot: SPI Speed      : 40MHz[0m
+[0;32mI (40) boot: SPI Mode       : DIO[0m
+[0;32mI (40) boot: SPI Flash Size : 4MB[0m
+[0;32mI (42) boot: Partition Table:[0m
+[0;32mI (45) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (52) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (60) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (67) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (75) boot: End of partition table[0m
+[0;32mI (79) boot: Loading app partition at offset 00010000[0m
+[0;32mI (745) boot: segment 0: paddr=0x00010018 vaddr=0x00000000 size=0x0ffe8 ( 65512) [0m
+[0;32mI (746) boot: segment 1: paddr=0x00020008 vaddr=0x3f400010 size=0x08dec ( 36332) map[0m
+[0;32mI (751) boot: segment 2: paddr=0x00028dfc vaddr=0x3ffbfda0 size=0x01b30 (  6960) load[0m
+[0;32mI (821) heap_alloc_caps: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (822) heap_alloc_caps: At 3FFC18D0 len 0001E730 (121 KiB): DRAM[0m
+[0;32mI (825) heap_alloc_caps: At 3FFE8000 len 00010000 (64 KiB): D/IRAM[0m
+[0;32mI (831) heap_alloc_caps: At 3FFFC000 len 00004000 (16 KiB): D/IRAM[0m
+[0;32mI (838) heap_alloc_caps: At 4009C6D0 len 00003930 (14 KiB): IRAM[0m
+[0;32mI (845) cpu_start: Pro cpu up.[0m
+[0;32mI (849) cpu_start: Single core mode[0m
+[0;32mI (853) cpu_start: Pro cpu start user code[0m
+[0;31mE (917) phy_init: PHY data partition validated[0m
+[0;32mI (946) phy: phy_version: 258, Nov 29 2016, 15:51:07, 1, 1[0m
+[0;32mI (947) cpu_start: Starting scheduler on PRO CPU.[0m
+Starting ... 
+[0;32mI (985) weather: Boot count: 0[0m
+tcpip_task_hdlxxx : 3ffc5324, prio:18,stack:2048
+I (985) wifi: frc2_timer_task_hdl:3ffc6d64, prio:22, stack:2048
+I (1015) wifi: pp_task_hdl : 3ffc95b0, prio:23, stack:8192
+[0;32mI (1015) weather: Setting WiFi configuration SSID p...[0m
+I (1015) wifi: mode : sta (24:0a:c4:00:c8:b0)
+s/n: a7 6b 63 b9
+s/nb: 15 ff b5 ff
+Si7021
+Found device addres: 40
+Found device addres: 77
+Done scanning.. found 2 devices
+I (1135) wifi: n:1 0, o:1 0, ap:255 255, sta:1 0, prof:1
+I (1785) wifi: state: init -> auth (b0)
+I (1785) wifi: state: auth -> assoc (0)
+I (1785) wifi: state: assoc -> run (10)
+I (1805) wifi: connected with p, channel 1
+RH 27.550262 Temp 23.828394 , internal 87
+chip id 60
+Displaying all regs
+0x08 0802 0500 0809 0208 0a07 020d 0f06 0006 0f00 060e 0705 0608 0302 0000 0904 080f 
+0x09 0606 0d06 0d00 000b 0a02 0201 0e09 0f0f 0f09 0f0f 0a0c 0206 000a 0d08 0b0d 0100 
+0x0a 0000 040b 0a05 0000 0000 0000 0000 0000 0000 0000 0000 0000 0303 0000 0000 0c00 
+0x0b 0000 0504 0000 0000 0000 0000 0600 0002 0000 0001 0f0f 0f0f 010f 0600 0003 0000 
+0x0c 0000 0000 0204 0f0f 0000 0000 0000 0000 0001 0000 0000 0000 0000 0000 0000 0000 
+0x0d 0600 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 
+0x0e 0000 0609 0001 0000 0104 0002 0000 010e 030c 0401 0f0f 0f0f 0f0f 0f0f 0f0f 0f0f 
+0x0f 0f0f 0000 0001 0000 0204 0000 0000 040c 0c0b 0000 070f 0d0f 0000 0606 0809 0800 
+status 0
+status after begin c
+power mode 3
+status c
+[0;32mI (8565) event: ip: 192.168.1.128, mask: 255.255.255.0, gw: 192.168.1.1[0m
+I (11785) wifi: pm start, type:0
+
+status 0
+temp 523472,5234
+hPA 314448,1228
+rh 26309,25
+RH 31.767578 Temp 22.020000 , pressure 100843.734375
+power mode 0
+power mode 0
+status 0
+status 0
+temp 523168,5231
+hPA 314336,1227
+rh 26279,25
+RH 31.593750 Temp 21.920000 , pressure 100847.023438
+power mode 0
+power mode 0
+status 0
+status 0
+temp 523024,5230
+hPA 314304,1227
+rh 26329,25
+RH 31.868164 Temp 21.879999 , pressure 100844.992188
+power mode 0
+[0;32mI (35385) weather: Connected to AP[0m
+[0;32mI (35385) weather: ... allocated socket
+[0m
+[0;32mI (38135) weather: ... connected[0m
+[0;32mI (38135) weather: ... socket send success[0m
+GET /update?api_key=8FKJRMLXT2CPYCVO&field1=23&field2=27&field3=87&field4=21&field5=31 HTTP/1.0
+
+
+HTTP/1.1 200 OK
+Server: nginx/1.7.5
+Date: Mon, 09 Jan 2017 21:16:47 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 1
+Connection: close
+Status: 200 OK
+X-Frame-Options: ALLOWALL
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS, DELETE, PATCH
+Access-Control-Allow-Headers: origin, content-type, X-Requested-With
+Access-Control-Max-Age: 1800
+ETag: "c81e728d9d4c2f636f067f89cc14862c"
+Cache-Control: max-age=0, private, must-revalidate
+X-Request-Id: c8a63d26-dbae-4eec-b459-45f555c812ca
+
+2[0;32mI (38385) weather: ... done reading from socket. Last read return=0 errno=128
+[0m
+[0;32mI (38395) weather: 10... [0m
+[0;32mI (39395) weather: 9... [0m
+[0;32mI (40395) weather: 8... [0m
+[0;32mI (41395) weather: 7... [0m
+[0;32mI (42395) weather: 6... [0m
+[0;32mI (43395) weather: 5... [0m
+[0;32mI (44395) weather: 4... [0m
+[0;32mI (45395) weather: 3... [0m
+[0;32mI (46395) weather: 2... [0m
+[0;32mI (47395) weather: 1... [0m
+[0;32mI (48395) weather: 0... [0m
+[0;32mI (49395) weather: Starting again![0m
+[0;32mI (49395) weather: Connected to AP[0m
+ets Jun  8 2016 00:22:57
+
+rst:0x5 (DEEPSLEEP_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0x00
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3ffc0008,len:4
+load:0x3ffc000c,len:3236
+load:0x40078000,len:4420
+ho 0 tail 12 room 4
+load:0x40080000,len:260
+entry 0x40080034
+[0;32mI (19) boot: Espressif ESP32 2nd stage bootloader v. V0.1[0m
+[0;32mI (25) boot: compile time 15:50:00[0m
+[0;32mI (40) boot: SPI Speed      : 40MHz[0m
+[0;32mI (40) boot: SPI Mode       : DIO[0m
+[0;32mI (40) boot: SPI Flash Size : 4MB[0m
+[0;32mI (42) boot: Partition Table:[0m
+[0;32mI (45) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (52) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (60) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (67) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (75) boot: End of partition table[0m
+[0;32mI (79) boot: Loading app partition at offset 00010000[0m
+[0;32mI (745) boot: segment 0: paddr=0x00010018 vaddr=0x00000000 size=0x0ffe8 ( 65512) [0m
+[0;32mI (746) boot: segment 1: paddr=0x00020008 vaddr=0x3f400010 size=0x08dec ( 36332) map[0m
+[0;32mI (751) boot: segment 2: paddr=0x00028dfc vaddr=0x3ffbfda0 size=0x01b30 (  6960) load[0m
+[0;32mI (821) heap_alloc_caps: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (822) heap_alloc_caps: At 3FFC18D0 len 0001E730 (121 KiB): DRAM[0m
+[0;32mI (825) heap_alloc_caps: At 3FFE8000 len 00010000 (64 KiB): D/IRAM[0m
+[0;32mI (831) heap_alloc_caps: At 3FFFC000 len 00004000 (16 KiB): D/IRAM[0m
+[0;32mI (838) heap_alloc_caps: At 4009C6D0 len 00003930 (14 KiB): IRAM[0m
+[0;32mI (845) cpu_start: Pro cpu up.[0m
+[0;32mI (849) cpu_start: Single core mode[0m
+[0;32mI (853) cpu_start: Pro cpu start user code[0m
+[0;31mE (917) phy_init: PHY data partition validated[0m
+[0;32mI (946) phy: phy_version: 258, Nov 29 2016, 15:51:07, 1, 1[0m
+[0;32mI (947) cpu_start: Starting scheduler on PRO CPU.[0m
+Starting ... 
+[0;32mI (985) weather: Boot count: 0[0m
+tcpip_task_hdlxxx : 3ffc5324, prio:18,stack:2048
+I (985) wifi: frc2_timer_task_hdl:3ffc6d64, prio:22, stack:2048
+I (1015) wifi: pp_task_hdl : 3ffc95b0, prio:23, stack:8192
+[0;32mI (1015) weather: Setting WiFi configuration SSID p...[0m
+I (1015) wifi: mode : sta (24:0a:c4:00:c8:b0)
+s/n: a7 6b 63 b9
+s/nb: 15 ff b5 ff
+Si7021
+Found device addres: 40
+Found device addres: 77
+Done scanning.. found 2 devices
+I (1135) wifi: n:1 0, o:1 0, ap:255 255, sta:1 0, prof:1
+I (1785) wifi: state: init -> auth (b0)
+I (1795) wifi: state: auth -> assoc (0)
+I (1805) wifi: state: assoc -> run (10)
+I (1845) wifi: connected with p, channel 1
+RH 26.779694 Temp 20.836092 , internal 86
+chip id 60
+Displaying all regs
+0x08 0802 0500 0809 0208 0a07 020d 0f06 0006 0f00 060e 0705 0608 0302 0000 0904 080f 
+0x09 0606 0d06 0d00 000b 0a02 0201 0e09 0f0f 0f09 0f0f 0a0c 0206 000a 0d08 0b0d 0100 
+0x0a 0000 040b 0a05 0000 0000 0000 0000 0000 0000 0000 0000 0000 0303 0000 0000 0c00 
+0x0b 0000 0504 0000 0000 0000 0000 0600 0002 0000 0001 0f0f 0f0f 010f 0600 0003 0000 
+0x0c 0000 0000 0204 0f0f 0000 0000 0000 0000 0001 0000 0000 0000 0000 0000 0000 0000 
+0x0d 0600 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 
+0x0e 0000 0609 0001 0000 0104 0002 0000 010e 030c 0401 0f0f 0f0f 0f0f 0f0f 0f0f 0f0f 
+0x0f 0f0f 0000 0001 0000 0204 0000 0000 040c 0b0c 0000 070f 0b01 0000 0606 0d09 0800 
+status 0
+status after begin c
+power mode 3
+status c
+[0;32mI (8575) event: ip: 192.168.1.128, mask: 255.255.255.0, gw: 192.168.1.1[0m
+I (11805) wifi: pm start, type:0
+
+ets Jun  8 2016 00:22:57
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+ets Jun  8 2016 00:22:57
+
+rst:0x10 (RTCWDT_RTC_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0x00
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3ffc0008,len:4
+load:0x3ffc000c,len:3236
+load:0x40078000,len:4420
+ho 0 tail 12 room 4
+load:0x40080000,len:260
+entry 0x40080034
+[0;32mI (19) boot: Espressif ESP32 2nd stage bootloader v. V0.1[0m
+[0;32mI (25) boot: compile time 15:50:00[0m
+[0;32mI (39) boot: SPI Speed      : 40MHz[0m
+[0;32mI (39) boot: SPI Mode       : DIO[0m
+[0;32mI (39) boot: SPI Flash Size : 4MB[0m
+[0;32mI (40) boot: Partition Table:[0m
+[0;32mI (44) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (51) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (58) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (65) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (73) boot: End of partition table[0m
+[0;32mI (76) boot: Loading app partition at offset 00010000[0m
+[0;32mI (743) boot: segment 0: paddr=0x00010018 vaddr=0x00000000 size=0x0ffe8 ( 65512) [0m
+[0;32mI (743) boot: segment 1: paddr=0x00020008 vaddr=0x3f400010 size=0x08dec ( 36332) map[0m
+[0;32mI (748) boot: segment 2: paddr=0x00028dfc vaddr=0x3ffbfda0 size=0x01b30 (  6960) load[0m
+[0;32mI (819) heap_alloc_caps: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (819) heap_alloc_caps: At 3FFC18D0 len 0001E730 (121 KiB): DRAM[0m
+[0;32mI (822) heap_alloc_caps: At 3FFE8000 len 00010000 (64 KiB): D/IRAM[0m
+[0;32mI (828) heap_alloc_caps: At 3FFFC000 len 00004000 (16 KiB): D/IRAM[0m
+[0;32mI (835) heap_alloc_caps: At 4009C6D0 len 00003930 (14 KiB): IRAM[0m
+[0;32mI (842) cpu_start: Pro cpu up.[0m
+[0;32mI (845) cpu_start: Single core mode[0m
+[0;32mI (849) cpu_start: Pro cpu start user code[0m
+[0;31mE (913) phy_init: PHY data partition validated[0m
+[0;32mI (1092) phy: phy_version: 258, Nov 29 2016, 15:51:07, 1, 0[0m
+[0;32mI (2106) cpu_start: Starting scheduler on PRO CPU.[0m
+Starting ... 
+[0;32mI (2109) weather: Boot count: 0[0m
+tcpip_task_hdlxxx : 3ffc5324, prio:18,stack:2048
+I (2109) wifi: frc2_timer_task_hdl:3ffc6d64, prio:22, stack:2048
+I (2119) wifi: pp_task_hdl : 3ffc95b0, prio:23, stack:8192
+[0;32mI (2119) weather: Setting WiFi configuration SSID p...[0m
+I (2129) wifi: mode : sta (24:0a:c4:00:c8:b0)
+s/n: a7 6b 63 b9
+s/nb: 15 ff b5 ff
+Si7021
+Found device addres: 40
+Found device addres: 77
+Done scanning.. found 2 devices
+I (2249) wifi: n:1 0, o:1 0, ap:255 255, sta:1 0, prof:1
+I (2899) wifi: state: init -> auth (b0)
+I (2899) wifi: state: auth -> assoc (0)
+I (2909) wifi: state: assoc -> run (10)
+I (2919) wifi: connected with p, channel 1
+RH 40.802521 Temp 13.725351 , internal 86
+chip id 60
+Displaying all regs
+0x08 0802 0500 0809 0208 0a07 020d 0f06 0006 0f00 060e 0705 0608 0302 0000 0904 080f 
+0x09 0606 0d06 0d00 000b 0a02 0201 0e09 0f0f 0f09 0f0f 0a0c 0206 000a 0d08 0b0d 0100 
+0x0a 0000 040b 0a05 0000 0000 0000 0000 0000 0000 0000 0000 0000 0303 0000 0000 0c00 
+0x0b 0000 0504 0000 0000 0000 0000 0600 0002 0000 0001 0f0f 0f0f 010f 0600 0003 0000 
+0x0c 0000 0000 0204 0f0f 0000 0000 0000 0000 0001 0000 0000 0000 0000 0000 0000 0000 
+0x0d 0600 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 
+0x0e 0000 0609 0001 0000 0104 0002 0000 010e 030c 0401 0f0f 0f0f 0f0f 0f0f 0f0f 0f0f 
+0x0f 0f0f 0000 0001 0000 0204 0000 0000 040b 0203 0000 070a 0806 0000 060c 0601 0800 
+status 0
+status after begin c
+power mode 3
+status c
+[0;32mI (9689) event: ip: 192.168.1.128, mask: 255.255.255.0, gw: 192.168.1.1[0m
