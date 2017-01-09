@@ -32,6 +32,7 @@
 #include "sdkconfig.h"
 #include "driver/i2c.h"
 #include "Si7021.h"
+#include "BME280.h" 
 
 // Use internal sensor
 uint8_t temprature_sens_read();	
@@ -356,13 +357,13 @@ static void http_get_task(void *pvParameters)
 }
 
 
-void post_data(float temp,float humidity,int internal_temp)
+void post_data(float temp,float humidity,int internal_temp,int temp2,int rh2)
 {
 
     int itemp=temp;
     int humid=humidity;
 
-    sprintf(temp_buff,"GET /update?api_key=%s&field1=%d&field2=%d&field3=%d HTTP/1.0\n\n",THINGSPEAK_CHANNEL_KEY,itemp,humid,internal_temp);
+    sprintf(temp_buff,"GET /update?api_key=%s&field1=%d&field2=%d&field3=%d&field4=%d&field5=%d HTTP/1.0\n\n",THINGSPEAK_CHANNEL_KEY,itemp,humid,internal_temp,temp2,rh2);
 
     xTaskCreate(&http_get_task, "http_get_task", 4096, NULL, 5, NULL);
 
@@ -411,6 +412,28 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
+#if 0
+static void bme280_task(void *pvParameters) {
+    float rh;
+    float temp;
+    float pressure;
+    int times=0;
+    i2c_bme280_begin();
+
+    while (times++<10) {
+        printf("chip id %x\n",i2c_bme280_read_register(BME280_CHIP_ID_REG));
+
+        temp=i2c_bme280_read_temp();
+        pressure=i2c_bme280_read_pressure();
+        rh=i2c_bme280_read_rh();
+
+        printf("RH %f Temp %f , pressure %f\n",rh,temp,pressure);
+
+    }
+    i2c_bme280_end();
+
+}
+#endif
 
 void app_main()
 {
@@ -465,21 +488,27 @@ void app_main()
 
     i2c_scan();
     int times=0;
-    float rh;
-    float temp;
+    float rh,rh280;
+    float temp,temp280;
+    float pressure;
 
-    while (times++<10) {
-        rh=i2c_7021_read_rh();
+    rh=i2c_7021_read_rh();
 
-        temp=i2c_7021_read_temp();
+    temp=i2c_7021_read_temp();
 
-        printf("RH %f Temp %f , internal %d\n",rh,temp,internal);
+    printf("RH %f Temp %f , internal %d\n",rh,temp,internal);
 
-    }
+    printf("chip id %x\n",i2c_bme280_read_register(BME280_CHIP_ID_REG));
+
+    i2c_bme280_begin();
+
+    temp280=i2c_bme280_read_temp();
+    pressure=i2c_bme280_read_pressure();
+    rh280=i2c_bme280_read_rh();
 
 
     if (start_wifi) {
-        post_data(temp,rh,internal);
+        post_data(temp,rh,internal,temp280,rh280);
     }
 
     xTaskCreatePinnedToCore(&blink_task, "blink_task", 4096, NULL, 5,
