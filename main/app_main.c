@@ -402,8 +402,8 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = "ssid",
-            .password = "password",
+            .ssid = "p",
+            .password = "p",
         },
     };
     ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
@@ -500,15 +500,55 @@ void app_main()
 
     printf("chip id %x\n",i2c_bme280_read_register(BME280_CHIP_ID_REG));
 
+
+    printf("Displaying all regs\n");
+	uint8_t memCounter = 0x80;
+	uint8_t tempReadData;
+	for(int rowi = 8; rowi < 16; rowi++ )
+	{
+		printf("0x%02x ",rowi);
+		for(int coli = 0; coli < 16; coli++ )
+		{
+			tempReadData = i2c_bme280_read_register(memCounter);
+			printf("%02x",(tempReadData >> 4) & 0x0F);//Print first hex nibble
+			printf("%02x",tempReadData & 0x0F);//Print second hex nibble
+			printf(" ");
+			memCounter++;
+		}
+		printf("\n");
+    }
+    uint8_t status;
+    int statustimes=0;
+
+    printf("status %x\n",i2c_bme280_read_register(0xF3));
     i2c_bme280_begin();
+    printf("status after begin %x\n",i2c_bme280_read_register(0xF3));
 
-    temp280=i2c_bme280_read_temp();
-    pressure=i2c_bme280_read_pressure();
-    rh280=i2c_bme280_read_rh();
+    while(times++ < 3 ) 
+    {
+        printf("power mode %x\n",i2c_bme280_get_power_mode());
+        printf("status %x\n",i2c_bme280_read_register(0xF3));
+        
+        i2c_bme280_force_readings();
+        printf("status %x\n",i2c_bme280_read_register(0xF3));
 
+        status=i2c_bme280_read_register(0xF3);
+        while((status & (3<<1)) == (3<<1) && (statustimes++ <10))
+        {
+            status=i2c_bme280_read_register(0xF3);
+            printf(".");
+        }
+        temp280=i2c_bme280_read_temp();
+        pressure=i2c_bme280_read_pressure();
+        rh280=i2c_bme280_read_rh();
+        printf("RH %f Temp %f , pressure %f\n",rh280,temp280,pressure);
+        printf("power mode %x\n",i2c_bme280_get_power_mode());
+    }
+    i2c_bme280_end();
 
     if (start_wifi) {
         post_data(temp,rh,internal,temp280,rh280);
+        //xEventGroupSetBits(wifi_event_group, POSTED_BIT);
     }
 
     xTaskCreatePinnedToCore(&blink_task, "blink_task", 4096, NULL, 5,

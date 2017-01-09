@@ -343,7 +343,7 @@ BME280_INIT_VALUE, BME280_INIT_VALUE, BME280_INIT_VALUE};
 	//Last, set mode
 	dataToWrite |= (settings.runMode) & 0x03;
 	//Load the byte
-        i2c_bme280_write_register(BME280_CTRL_MEAS_REG, dataToWrite);
+    i2c_bme280_write_register(BME280_CTRL_MEAS_REG, dataToWrite);
 
 
     return true;
@@ -401,7 +401,7 @@ uint8_t i2c_bme280_read_register(uint8_t reg)
     if (ret == ESP_FAIL) {
         return ret;
     }
-    vTaskDelay(200 / portTICK_RATE_MS);
+    vTaskDelay(30 / portTICK_RATE_MS);
 
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
@@ -423,7 +423,7 @@ bool i2c_bme280_write_register(uint8_t reg,uint8_t value)
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, BME280_I2C_ADDRESS2 << 1 | WRITE_BIT, ACK_CHECK_EN);
     i2c_master_write_byte(cmd,  reg, ACK_CHECK_EN);
-    i2c_master_write_byte(cmd,  value, NACK_VAL);
+    i2c_master_write_byte(cmd,  value, ACK_CHECK_EN);
     i2c_master_stop(cmd);
     int ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
