@@ -322,17 +322,17 @@ BME280_INIT_VALUE, BME280_INIT_VALUE, BME280_INIT_VALUE};
     if (calib_data->dig_H6!= ((uint8_t)i2c_bme280_read_register(BME280_DIG_H6_REG))) printf("H6 diff\n");
 #endif
 
-    //Set the oversampling control words.
+        //Set the oversampling control words.
 	//config will only be writeable in sleep mode, so first insure that.
 	i2c_bme280_write_register(BME280_CTRL_MEAS_REG, 0x00);
 	
 	//Set the config word
-	dataToWrite = (0 /*standby*/ << 0x5) & 0xE0;
-	dataToWrite |= (0 /*filter */ << 0x02) & 0x1C;
+	dataToWrite = ( settings.tStandby << 0x5) & 0xE0;
+	dataToWrite |= ( settings.filter << 0x02) & 0x1C;
 	i2c_bme280_write_register(BME280_CONFIG_REG, dataToWrite);
 	
 	//Set ctrl_hum first, then ctrl_meas to activate ctrl_hum
-	dataToWrite = 0 /*hum oversample*/ & 0x07; //all other bits can be ignored
+	dataToWrite = settings.humidOverSample & 0x07; //all other bits can be ignored
 	i2c_bme280_write_register(BME280_CTRL_HUMIDITY_REG, dataToWrite);
 	
 	//set ctrl_meas
@@ -343,7 +343,7 @@ BME280_INIT_VALUE, BME280_INIT_VALUE, BME280_INIT_VALUE};
 	//Last, set mode
 	dataToWrite |= (settings.runMode) & 0x03;
 	//Load the byte
-    i2c_bme280_write_register(BME280_CTRL_MEAS_REG, dataToWrite);
+        i2c_bme280_write_register(BME280_CTRL_MEAS_REG, dataToWrite);
 
 
     return true;
