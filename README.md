@@ -4,7 +4,8 @@ Collect data from bosh/sparkfun BME280 i2c and internal temperature sensor. Send
 Here are the reuslts.
 https://thingspeak.com/channels/209116
 For the dataseries I opened the window, closed the window, used a hair-drier and then just let is sit with the window closed.
-
+Obviously the BME280 driver is not correct. 
+https://github.com/BoschSensortec/BME280_driver
 
 I used the si720 temperature humidity board.
 
