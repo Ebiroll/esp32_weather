@@ -11,12 +11,29 @@
 #define BME280_I2C_ADDRESS1                  (0x76)
 #define BME280_I2C_ADDRESS2                  (0x77)
 
+typedef struct SensorSettings
+{
+		
+	uint8_t runMode;
+	uint8_t tStandby;
+	uint8_t filter;
+	uint8_t tempOverSample;
+	uint8_t pressOverSample;
+	uint8_t humidOverSample;
+
+} SensorSettings;
+
+
 // You must call begin first, it will read all registers and store 
 // calibration data
 bool i2c_bme280_begin();
 
 // This will free the calibration data, if called you will have to call begin again
 void i2c_bme280_end();
+
+// This will put sensor to sleep mode after reading data. 
+void i2c_bme280_force_readings( void );
+
 
 // You must call this first!!
 float i2c_bme280_read_temp();
@@ -33,6 +50,8 @@ float i2c_bme280_read_pressure();
 uint8_t i2c_bme280_read_register(uint8_t reg);
 
 bool i2c_bme280_write_register(uint8_t reg,uint8_t value);
+
+uint8_t i2c_bme280_get_power_mode();
 
 
 /*calibration parameters */
@@ -125,7 +144,7 @@ typedef struct calibrationDataType {
 	uint8_t dig_H3;
 	int16_t dig_H4;
 	int16_t dig_H5;
-    uint8_t dig_H6;
+    int8_t  dig_H6;
 } calibrationDataType;
 
 

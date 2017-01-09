@@ -108,6 +108,8 @@ int32_t t_fine;
 
 calibrationDataType *calib_data=NULL;
 
+SensorSettings settings;
+
 /**
  *   https://www.bosch-sensortec.com/bst/products/all_products/bme280
  * @brief  read all registers from a bme280 device
@@ -122,10 +124,52 @@ calibrationDataType *calib_data=NULL;
  */
 
 bool i2c_bme280_begin() {
+// Settings
 
-i2c_port_t i2c_num = I2C_MASTER_NUM;
-uint8_t dataToWrite = 0; //Temporary variable
-u8 a_data_u8[BME280_CALIB_DATA_SIZE] = {
+   //runMode can be:
+   //  0, Sleep mode
+   //  1 or 2, Forced mode
+   //  3, Normal mode
+  settings.runMode = 3;
+
+	//tStandby can be:
+	//  0, 0.5ms
+	//  1, 62.5ms
+	//  2, 125ms
+	//  3, 250ms
+	//  4, 500ms
+	//  5, 1000ms
+	//  6, 10ms
+	//  7, 20ms
+	settings.tStandby = 0;
+	
+	//filter can be off or number of FIR coefficients to use:
+	//  0, filter off
+	//  1, coefficients = 2
+	//  2, coefficients = 4
+	//  3, coefficients = 8
+	//  4, coefficients = 16
+	settings.filter = 0;
+	
+	//tempOverSample can be:
+	//  0, skipped
+	//  1 through 5, oversampling *1, *2, *4, *8, *16 respectively
+	settings.tempOverSample = 1;
+
+	//pressOverSample can be:
+	//  0, skipped
+	//  1 through 5, oversampling *1, *2, *4, *8, *16 respectively
+    settings.pressOverSample = 1;
+	
+	//humidOverSample can be:
+	//  0, skipped
+	//  1 through 5, oversampling *1, *2, *4, *8, *16 respectively
+   settings.humidOverSample = 1;
+
+
+   i2c_port_t i2c_num = I2C_MASTER_NUM;
+   uint8_t dataToWrite = 0; //Temporary variable
+   u8 a_data_u8[BME280_CALIB_DATA_SIZE] = {
 	BME280_INIT_VALUE, BME280_INIT_VALUE,
 	BME280_INIT_VALUE, BME280_INIT_VALUE, BME280_INIT_VALUE,
 	BME280_INIT_VALUE, BME280_INIT_VALUE, BME280_INIT_VALUE,
@@ -293,11 +337,11 @@ BME280_INIT_VALUE, BME280_INIT_VALUE, BME280_INIT_VALUE};
 	
 	//set ctrl_meas
 	//First, set temp oversampling
-	dataToWrite = (0 /*tempOverSample*/ << 0x5) & 0xE0;
+	dataToWrite = (settings.tempOverSample << 0x5) & 0xE0;
 	//Next, pressure oversampling
-	dataToWrite |= (0 /*pressOverSample*/ << 0x02) & 0x1C;
+	dataToWrite |= (settings.pressOverSample << 0x02) & 0x1C;
 	//Last, set mode
-	dataToWrite |= (0 /*runMode*/) & 0x03;
+	dataToWrite |= (settings.runMode) & 0x03;
 	//Load the byte
     i2c_bme280_write_register(BME280_CTRL_MEAS_REG, dataToWrite);
 
@@ -313,6 +357,34 @@ void i2c_bme280_end() {
     calib_data=NULL;
 }
 
+
+void i2c_bme280_force_readings( void )
+{
+	//set Force mode
+	settings.runMode = 0x01;	//Table 25: register settings mode
+	uint8_t dataToWrite = 0;
+	dataToWrite = (settings.tempOverSample << 0x5) & 0xE0;
+	dataToWrite |= (settings.pressOverSample << 0x02) & 0x1C;
+	dataToWrite |= (settings.runMode) & 0x03;
+	i2c_bme280_write_register(BME280_CTRL_MEAS_REG, dataToWrite);
+
+	//sleep while measurements are happening
+	//(we'll use t_measure,max in "9.1 Measurement time" of the datasheet)
+	uint32_t t_measure_us = 1250;		// microseconds
+	if (settings.tempOverSample) {
+		t_measure_us += 2300 * settings.tempOverSample;
+	}
+	if (settings.pressOverSample) {
+		t_measure_us += 2300 * settings.pressOverSample + 575;
+	}
+	if (settings.humidOverSample) {
+		t_measure_us += 2300 * settings.humidOverSample + 575;
+	}
+    // Should be ms rather than us
+    vTaskDelay(t_measure_us / portTICK_RATE_MS);
+
+	//delay((t_measure_us / 1000) + 1);	// round up
+}
 
 uint8_t i2c_bme280_read_register(uint8_t reg)
 {
@@ -406,6 +478,8 @@ float i2c_bme280_read_temp( void )
 
 	//get the reading (adc_T);
 	int32_t adc_T = ((uint32_t)i2c_bme280_read_register(BME280_TEMPERATURE_MSB_REG) << 12) | ((uint32_t)i2c_bme280_read_register(BME280_TEMPERATURE_LSB_REG) << 4) | ((i2c_bme280_read_register(BME280_TEMPERATURE_XLSB_REG) >> 4) & 0x0F);
+    printf("temp %d,%d\n",adc_T,adc_T/100);
+
 
 	//By datasheet, calibrate
 	int64_t var1, var2;
