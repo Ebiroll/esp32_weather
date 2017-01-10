@@ -3,14 +3,15 @@ Collect data from bosh/sparkfun BME280 & Si7021 over i2c and the internal esp32 
 
 Here are the reuslts.
 https://thingspeak.com/channels/209116
-For the dataseries I opened the window, closed the window, used a hair-drier and then just let is sit with the window closed.
+https://thingspeak.com/channels/212260
+For the first dataseries I opened the window, closed the window, used a hair-drier and then just let is sit with the window closed.
+For the second one I put the esp32 in a box that I places outside.
 
 After this test i solved the problem with bootcount being lost.
 ```
     esp_deep_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
 ```
-That statement was missing in the ecample. Now I will let the board run on a 7800mAh battery and continue 
-to update this thingspeak channel https://thingspeak.com/channels/212260
+That statement was missing in the 06_sntp example. Now I will let the board run on a 7800mAh battery and continue to update this thingspeak channel https://thingspeak.com/channels/212260
 I also added pressure to this feed. As measurements indoors wasnt so exciting I moved the data collection outside.
 
 For temperature measurements, I used the adafruit si7021 temperature humidity board & Sparkfun BME280 board.
@@ -45,9 +46,9 @@ void i2c_init()
 Simple but useful to see the assigned adresses of the i2c devices.
 ```
 /**
- * _______________________________________________________________________________________
- * | start | slave_addr  +ack | 
- * --------|--------------------------|----------------------|--------------------|------|
+ * _____________________________
+ * | start | slave_addr  + sack | 
+ * --------|--------------------|
  *
  */
 esp_err_t i2c_master_check_slave(i2c_port_t i2c_num,uint8_t addr)
@@ -61,16 +62,15 @@ esp_err_t i2c_master_check_slave(i2c_port_t i2c_num,uint8_t addr)
     return ret;
 }
 
-
 void i2c_scan() {
-	int address;
+    int address;
     int ret;
-	int foundCount = 0;
-	for (address=1; address<127; address++) {
+    int foundCount = 0;
+    for (address=1; address<127; address++) {
         ret=i2c_master_check_slave(I2C_MASTER_NUM,address);
         if (ret == ESP_OK) {
             printf("Found device addres: %02x\n", address);
-            foundCount++;
+           foundCount++;
         }
     }
     printf("Done scanning.. found %d devices\n",foundCount);
@@ -78,7 +78,7 @@ void i2c_scan() {
 ```
 #The si7021 board
 https://cdn-learn.adafruit.com/downloads/pdf/adafruit-si7021-temperature-plus-humidity-sensor.pdf
-Future enhancements to add heating function to enhance humidity sensing. 
+Future enhancements could be to add heating function to enhance humidity sensing. 
 
 ```
     i7021.humidity=i2c_7021_read_rh();
