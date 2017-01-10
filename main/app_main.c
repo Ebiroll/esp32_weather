@@ -92,86 +92,6 @@ void show_buf(uint8_t* buf, int len)
     printf("\n");
 }
 
-#define  SI7021_ADDRESS    0x40
-#define  SN_CMD_START      0xFA
-#define  SN_CMD2           0x0F
-
-/**
- *    https://cdn-learn.adafruit.com/assets/assets/000/035/931/original/Support_Documents_TechnicalDocs_Si7021-A20.pdf
- * @brief test code to read serial number from Si7021 device
- * _________________________________________________________________
- * | start | slave_addr + wr_bit + ack | write 1 byte + ack  | stop |
- * --------|---------------------------|---------------------|------|
- * 2. wait more than 24 ms
- * 3. read data
- * ______________________________________________________________________________________
- * | start | slave_addr + rd_bit + ack | read 1 byte + ack  ... read 1 byte + nack | stop |
- * --------|---------------------------|---------------------|--------------------|------|
- */
-esp_err_t i2c_sn7021_test(i2c_port_t i2c_num, uint8_t* sna_3,uint8_t* sna_2,uint8_t* sna_1,uint8_t* sna_0)
-{
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, SI7021_ADDRESS << 1 | WRITE_BIT, ACK_CHECK_EN);
-    i2c_master_write_byte(cmd, SN_CMD_START, ACK_CHECK_EN);
-    i2c_master_write_byte(cmd, SN_CMD2, ACK_CHECK_EN);
-
-    i2c_master_stop(cmd);
-    int ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    if (ret == ESP_FAIL) {
-        return ret;
-    }
-    vTaskDelay(30 / portTICK_RATE_MS);
-
-    cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, SI7021_ADDRESS << 1 | READ_BIT, ACK_CHECK_EN);
-    i2c_master_read_byte(cmd, sna_3, ACK_VAL);
-    i2c_master_read_byte(cmd, sna_2, ACK_VAL);
-    i2c_master_read_byte(cmd, sna_1, ACK_VAL);
-    i2c_master_read_byte(cmd, sna_0, NACK_VAL);
-    i2c_master_stop(cmd);
-    ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    if (ret == ESP_FAIL) {
-        return ESP_FAIL;
-    }
-    return ESP_OK;
-}
-
-esp_err_t i2c_sn7021_test2(i2c_port_t i2c_num, uint8_t* sna_3,uint8_t* sna_2,uint8_t* sna_1,uint8_t* sna_0)
-{
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, SI7021_ADDRESS << 1 | WRITE_BIT, ACK_CHECK_EN);
-    i2c_master_write_byte(cmd, 0xFC, ACK_CHECK_EN);
-    i2c_master_write_byte(cmd, 0xC9, ACK_CHECK_EN);
-
-    i2c_master_stop(cmd);
-    int ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    if (ret == ESP_FAIL) {
-        return ret;
-    }
-    vTaskDelay(30 / portTICK_RATE_MS);
-
-    cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, SI7021_ADDRESS << 1 | READ_BIT, ACK_CHECK_EN);
-    i2c_master_read_byte(cmd, sna_3, ACK_VAL);
-    i2c_master_read_byte(cmd, sna_2, ACK_VAL);
-    i2c_master_read_byte(cmd, sna_1, ACK_VAL);
-    i2c_master_read_byte(cmd, sna_0, NACK_VAL);
-    i2c_master_stop(cmd);
-    ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    if (ret == ESP_FAIL) {
-        return ESP_FAIL;
-    }
-    return ESP_OK;
-}
-
 
 /**
  *
@@ -252,14 +172,16 @@ void blink_task(void *pvParameters)
             xEventGroupWaitBits(wifi_event_group, POSTED_BIT,
                                 false, true, portMAX_DELAY);
         }
+        esp_deep_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
+
 
 		/* wakeup from deep sleep after 6 seconds */
 		esp_deep_sleep(1000*1000*6);
 	}
 }
 
-#define THINGSPEAK_CHANNEL_KEY "8FKJRMLXT2CPYCVO"
-
+//#define THINGSPEAK_CHANNEL_KEY "8FKJRMLXT2CPYCVO"
+#define THINGSPEAK_CHANNEL_KEY "FETKGOXXT8BVCMVC"
 
 char temp_buff[1024];
 
@@ -269,14 +191,15 @@ static void http_get_task(void *pvParameters)
     //    .ai_family = AF_INET,
     //    .ai_socktype = SOCK_STREAM,
     //};
-    struct addrinfo *res;
+    //struct addrinfo *res;
     //struct in_addr *addr;
     struct sockaddr_in dest; 
+    int times_tried=0;
 
     int s, r;
     char recv_buf[64];
 
-    while(1) {
+    while(times_tried++<3) {
         /* Wait for the callback to set the CONNECTED_BIT in the
            event group.
         */
@@ -295,22 +218,20 @@ static void http_get_task(void *pvParameters)
 */
         memset(&dest, 0, sizeof(dest));                          /* zero the struct */
         dest.sin_family = AF_INET;
-        dest.sin_addr.s_addr = inet_addr("184.106.153.149");    /* set destination IP number */ 
+        inet_pton(AF_INET, "184.106.153.149", &dest.sin_addr.s_addr);  /* set destination IP number */ 
         dest.sin_port = htons(80);                              /* set destination port number */
 
-
-
-         res=&dest;
+        //res=&dest;
         /* Code to print the resolved IP.
 
            Note: inet_ntoa is non-reentrant, look at ipaddr_ntoa_r for "real" code */
         //addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
         //ESP_LOGI(TAG, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
 
-        s = socket(AF_INET, SOCK_STREAM, 0);
+        s = socket(AF_INET, SOCK_STREAM,  IPPROTO_TCP);
         if(s < 0) {
             ESP_LOGE(TAG, "... Failed to allocate socket.");
-            freeaddrinfo(res);
+            //freeaddrinfo(res);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             continue;
         }
@@ -319,7 +240,7 @@ static void http_get_task(void *pvParameters)
         if(connect(s, (struct sockaddr *)&dest, sizeof(struct sockaddr_in)) != 0) {
             ESP_LOGE(TAG, "... socket connect failed errno=%d", errno);
             close(s);
-            freeaddrinfo(res);
+            //freeaddrinfo(res);
             vTaskDelay(4000 / portTICK_PERIOD_MS);
             continue;
         }
@@ -354,18 +275,24 @@ static void http_get_task(void *pvParameters)
         ESP_LOGI(TAG, "Starting again!");
         xEventGroupSetBits(wifi_event_group, POSTED_BIT);
     }
+    ESP_LOGI(TAG, "Giving up!");
+    xEventGroupSetBits(wifi_event_group, POSTED_BIT);
+
 }
 
+typedef struct tempHumidityParameters {
+    int temp;
+    int humidity;
+} tempHumidityParameters;
 
-void post_data(float temp,float humidity,int internal_temp,int temp2,int rh2)
+void post_data(tempHumidityParameters *first,int internal_temp,tempHumidityParameters *second,int pressure)
 {
+    int itemp=first->temp;
+    int humid=first->humidity;
 
-    int itemp=temp;
-    int humid=humidity;
+    sprintf(temp_buff,"GET /update?api_key=%s&field1=%d&field2=%d&field3=%d&field4=%d&field5=%d&field6=%d HTTP/1.0\n\n",THINGSPEAK_CHANNEL_KEY,itemp,humid,internal_temp,second->temp,second->humidity,pressure);
 
-    sprintf(temp_buff,"GET /update?api_key=%s&field1=%d&field2=%d&field3=%d&field4=%d&field5=%d HTTP/1.0\n\n",THINGSPEAK_CHANNEL_KEY,itemp,humid,internal_temp,temp2,rh2);
-
-    xTaskCreate(&http_get_task, "http_get_task", 4096, NULL, 5, NULL);
+    xTaskCreate(&http_get_task, "http_get_task", 2*4096, NULL, 5, NULL);
 
 }
 
@@ -437,13 +364,9 @@ static void bme280_task(void *pvParameters) {
 
 void app_main()
 {
-    int ret;
 	printf("Starting ... \r\n");
     //boot_count;
     ESP_LOGI(TAG, "Boot count: %d", boot_count);
-
-    // read sensor early
-    uint8_t internal=temprature_sens_read();	
 
 
     // Every minute start wifi
@@ -451,56 +374,44 @@ void app_main()
         nvs_flash_init();
         initialise_wifi();
         start_wifi=true;
+        boot_count++;
+
     } else {
-        // We dont start wifi, pretend post is complete
-        //xEventGroupSetBits(wifi_event_group, POSTED_BIT);
+        // We dont start wifi, our job is done.. go to sleep asap.
+        boot_count++;
         start_wifi=false;
+        
+        xTaskCreatePinnedToCore(&blink_task, "blink_task", 4096*2, NULL, 5,
+            NULL, 0);
+
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
+
     }
-    boot_count++;
+
+    // read sensor early
+    uint8_t internal=temprature_sens_read();	
 
 
-    uint8_t sna3,sna2,sna1,sna0; 
     i2c_init();
-
-    ret = i2c_sn7021_test( I2C_MASTER_NUM, &sna3, &sna2,&sna1,&sna0);
-
-    if (ret == ESP_OK) {
-        printf("s/n: %02x %02x %02x %02x\n", sna3,sna2,sna1,sna0);
-    } else {
-        printf("No ack, sensor not connected...skip...\n");
-    }
-    ret = i2c_sn7021_test2( I2C_MASTER_NUM, &sna3, &sna2,&sna1,&sna0);
-    if (ret == ESP_OK) {
-        printf("s/nb: %02x %02x %02x %02x\n", sna3,sna2,sna1,sna0);
-    } else {
-        printf("No ack, sensor not connected...skip...\n");
-    }
-    if (sna3==0x0D) {
-        printf("Si7013\n");
-    }
-    if (sna3==0x14) {
-        printf("Si7020\n");
-    }
-    if (sna3==0x15) {
-        printf("Si7021\n");
-    }
-
-
     i2c_scan();
+
     int times=0;
-    float rh,rh280;
-    float temp,temp280;
+    tempHumidityParameters i7021;
+    tempHumidityParameters bme280;
+
+    //float rh,rh280;
+    //float temp,temp280;
     float pressure;
 
-    rh=i2c_7021_read_rh();
+    i7021.humidity=i2c_7021_read_rh();
 
-    temp=i2c_7021_read_temp();
+    i7021.temp=(int)i2c_7021_read_temp();
 
-    printf("RH %f Temp %f , internal %d\n",rh,temp,internal);
+    printf("RH %d Temp %d , internal %d\n",i7021.humidity,i7021.temp,internal);
 
     printf("chip id %x\n",i2c_bme280_read_register(BME280_CHIP_ID_REG));
 
-
+#if 0
     printf("Displaying all regs\n");
 	uint8_t memCounter = 0x80;
 	uint8_t tempReadData;
@@ -517,6 +428,7 @@ void app_main()
 		}
 		printf("\n");
     }
+#endif
     uint8_t status;
     int statustimes=0;
 
@@ -524,7 +436,7 @@ void app_main()
     i2c_bme280_begin();
     printf("status after begin %x\n",i2c_bme280_read_register(0xF3));
 
-    while(times++ < 3 ) 
+    while(times++ < 2 ) 
     {
         printf("power mode %x\n",i2c_bme280_get_power_mode());
         printf("status %x\n",i2c_bme280_read_register(0xF3));
@@ -538,20 +450,21 @@ void app_main()
             status=i2c_bme280_read_register(0xF3);
             printf(".");
         }
-        temp280=i2c_bme280_read_temp();
+        bme280.temp=(int)i2c_bme280_read_temp();
         pressure=i2c_bme280_read_pressure();
-        rh280=i2c_bme280_read_rh();
-        printf("RH %f Temp %f , pressure %f\n",rh280,temp280,pressure);
+        bme280.humidity=(int)i2c_bme280_read_rh();
+        printf("RH %d Temp %d , pressure %f\n",bme280.humidity,bme280.temp,pressure/100.0);
         printf("power mode %x\n",i2c_bme280_get_power_mode());
     }
-    i2c_bme280_end();
+    // Not necessary
+    //i2c_bme280_end();
 
     if (start_wifi) {
-        post_data(temp,rh,internal,temp280,rh280);
+        post_data(&i7021,internal,&bme280,(int)pressure/100.0);
         //xEventGroupSetBits(wifi_event_group, POSTED_BIT);
-    }
+    } 
 
-    xTaskCreatePinnedToCore(&blink_task, "blink_task", 4096, NULL, 5,
+    xTaskCreatePinnedToCore(&blink_task, "blink_task", 4096*2, NULL, 5,
 				NULL, 0);
 
 }
