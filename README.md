@@ -2,12 +2,11 @@
 Collect data from bosh/sparkfun BME280 & Si7021 over i2c and the internal esp32 temperature sensor. Send data to thingspeak.com and go back to sleep.
 
 Here are the reuslts.
-https://thingspeak.com/channels/209116
-https://thingspeak.com/channels/212260
-For the first dataseries I opened the window, closed the window, used a hair-drier and then just let is sit with the window closed.
-For the second one I put the esp32 in a box that I places outside.
+    https://thingspeak.com/channels/209116
+    https://thingspeak.com/channels/212260
+For the first dataseries I opened the window, closed the window, used a hair-drier and then just let is sit with the window closed. For the second channel I put the esp32 in a box that I placed outside.
 
-After this test i solved the problem with bootcount being lost.
+I also solved the problem with bootcount being lost during sleep.
 ```
     esp_deep_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
 ```
