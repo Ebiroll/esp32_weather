@@ -103,4 +103,4 @@ i2c_bme280_begin(); puts the sensor in normal run mode. After calling i2c_bme280
 Running all day
 ![box](box.png)
 and night
-![night](night.png)
+![night](night.jpg)
