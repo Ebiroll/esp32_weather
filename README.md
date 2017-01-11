@@ -100,4 +100,7 @@ i2c_bme280_begin(); puts the sensor in normal run mode. After calling i2c_bme280
     printf("RH %d Temp %d , pressure %f\n",bme280.humidity,bme280.temp,pressure/100.0);
     printf("power mode %x\n",i2c_bme280_get_power_mode());
 ```
+Running all day
 ![box](box.png)
+and night
+![night](night.png)
