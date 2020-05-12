@@ -27,6 +27,7 @@
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
+#include "esp_sleep.h"
 
 #include "driver/gpio.h"
 #include "sdkconfig.h"
@@ -172,7 +173,7 @@ void blink_task(void *pvParameters)
             xEventGroupWaitBits(wifi_event_group, POSTED_BIT,
                                 false, true, portMAX_DELAY);
         }
-        esp_deep_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
+	      //esp_deep_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
 
 
 		/* wakeup from deep sleep after 6 seconds */
@@ -329,8 +330,8 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = "p",
-            .password = "p",
+            .ssid = "pappas",
+            .password = "hashtag1bestammer",
         },
     };
     ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
@@ -368,7 +369,31 @@ void app_main()
     //boot_count;
     ESP_LOGI(TAG, "Boot count: %d", boot_count);
 
+    i2c_init();
+    //i2c_scan();
+    
 
+#if 1
+    printf("Displaying all regs\n");
+	uint8_t memCounter = 0x80;
+	uint8_t tempReadData;
+	for(int rowi = 8; rowi < 16; rowi++ )
+	{
+		printf("0x%02x ",rowi);
+		for(int coli = 0; coli < 16; coli++ )
+		{
+			tempReadData = i2c_bme280_read_register(memCounter);
+			printf("%02x",(tempReadData >> 4) & 0x0F);//Print first hex nibble
+			printf("%02x",tempReadData & 0x0F);//Print second hex nibble
+			printf(" ");
+			memCounter++;
+		}
+		printf("\n");
+    }
+#endif
+
+
+    
     // Every minute start wifi
     if (boot_count%10==0) {
         nvs_flash_init();
@@ -392,8 +417,7 @@ void app_main()
     uint8_t internal=temprature_sens_read();	
 
 
-    i2c_init();
-    i2c_scan();
+
 
     int times=0;
     tempHumidityParameters i7021;
@@ -411,24 +435,7 @@ void app_main()
 
     printf("chip id %x\n",i2c_bme280_read_register(BME280_CHIP_ID_REG));
 
-#if 0
-    printf("Displaying all regs\n");
-	uint8_t memCounter = 0x80;
-	uint8_t tempReadData;
-	for(int rowi = 8; rowi < 16; rowi++ )
-	{
-		printf("0x%02x ",rowi);
-		for(int coli = 0; coli < 16; coli++ )
-		{
-			tempReadData = i2c_bme280_read_register(memCounter);
-			printf("%02x",(tempReadData >> 4) & 0x0F);//Print first hex nibble
-			printf("%02x",tempReadData & 0x0F);//Print second hex nibble
-			printf(" ");
-			memCounter++;
-		}
-		printf("\n");
-    }
-#endif
+
     uint8_t status;
     int statustimes=0;
 
